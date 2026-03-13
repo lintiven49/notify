@@ -307,7 +307,7 @@
   </div>
 
   <script>
-    const WAIT_SEC = 5;   // 20 minutes
+    const WAIT_SEC = 20 * 60;   // 20 minutes
     const REST_SEC = 20;        // 20 seconds
     const RING_CIRC = 314.16;
 
@@ -372,7 +372,7 @@
         document.getElementById("rest-num").textContent = restRemaining;
         if (restRemaining <= 0) {
           clearInterval(restTimer);
-          show("view-done");
+          startWaiting();
         }
       }, 1000);
     }
