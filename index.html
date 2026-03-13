@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>20-20-20 护眼提醒</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --accent: #4f8ef7;
+      --accent-soft: rgba(79, 142, 247, 0.12);
+      --green: #34d399;
+      --green-soft: rgba(52, 211, 153, 0.12);
+      --text: #e4e6f0;
+      --muted: #6b7280;
+      --radius: 20px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 56px;
+      width: 380px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, .4);
+    }
+
+    /* ── idle ── */
+    #view-idle .icon {
+      font-size: 56px;
+      margin-bottom: 20px;
+    }
+
+    #view-idle h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    #view-idle p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    /* ── counting down to next reminder ── */
+    #view-waiting .label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    #view-waiting .countdown {
+      font-size: 64px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    #view-waiting .countdown-unit {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .progress-ring {
+      margin: 0 auto 32px;
+      display: block;
+    }
+
+    .progress-ring circle {
+      transition: stroke-dashoffset .8s linear;
+    }
+
+    /* ── reminder alert ── */
+    #view-alert {
+      display: none;
+    }
+
+    #view-alert .pulse {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--green-soft);
+      border: 2px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 24px;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    #view-alert h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    #view-alert p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, .4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 16px rgba(52, 211, 153, 0);
+      }
+    }
+
+    /* ── rest countdown ── */
+    #view-rest {
+      display: none;
+    }
+
+    #view-rest .eye-icon {
+      font-size: 56px;
+      margin-bottom: 20px;
+    }
+
+    #view-rest h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    #view-rest .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 28px;
+    }
+
+    #view-rest .big-num {
+      font-size: 96px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    #view-rest .sec-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 0;
+    }
+
+    /* ── done ── */
+    #view-done {
+      display: none;
+    }
+
+    #view-done .check {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    #view-done h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    #view-done p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    /* ── buttons ── */
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+
+    button:active {
+      transform: scale(.97);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      opacity: .88;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #0f1117;
+    }
+
+    .btn-green:hover {
+      opacity: .88;
+    }
+
+    .skip-link {
+      display: block;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .skip-link:hover {
+      color: var(--text);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+
+    <!-- 1. 初始状态 -->
+    <div id="view-idle">
+      <div class="icon">👁️</div>
+      <h1>20-20-20 护眼法则</h1>
+      <p>每 <strong>20 分钟</strong>，看 <strong>20 英尺</strong>（约 6 米）外的物体，持续 <strong>20 秒</strong>，减轻眼部疲劳。</p>
+      <button class="btn-primary" onclick="startWaiting()">开始计时</button>
+    </div>
+
+    <!-- 2. 等待下次提醒 -->
+    <div id="view-waiting" style="display:none;">
+      <p class="label">距下次提醒</p>
+      <div class="countdown" id="wait-display">20:00</div>
+      <div class="countdown-unit">分钟 : 秒</div>
+
+      <svg class="progress-ring" width="120" height="120">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="6" />
+        <circle id="ring-bar" cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="6"
+          stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="0" transform="rotate(-90 60 60)" />
+      </svg>
+
+      <button class="btn-primary" onclick="resetAll()">重置</button>
+    </div>
+
+    <!-- 3. 提醒弹窗 -->
+    <div id="view-alert">
+      <div class="pulse">🌿</div>
+      <h2>休息一下眼睛！</h2>
+      <p>请看向远处约 <strong>6 米</strong>以外的地方，持续 <strong>20 秒</strong>。</p>
+      <button class="btn-green" onclick="startRest()">好的，开始计时</button>
+    </div>
+
+    <!-- 4. 20 秒倒计时 -->
+    <div id="view-rest">
+      <div class="eye-icon">🌄</div>
+      <h2>看向远方…</h2>
+      <p class="hint">放松眼部肌肉，让目光停留在远处</p>
+      <div class="big-num" id="rest-num">20</div>
+      <div class="sec-label">秒</div>
+    </div>
+
+    <!-- 5. 完成 -->
+    <div id="view-done">
+      <div class="check">✅</div>
+      <h2>眼睛已放松！</h2>
+      <p>很好，下次提醒将在 <strong>20 分钟</strong>后发出。继续保持好习惯！</p>
+      <button class="btn-primary" onclick="startWaiting()">继续计时</button>
+    </div>
+
+  </div>
+
+  <script>
+    const WAIT_SEC = 5;   // 20 minutes
+    const REST_SEC = 20;        // 20 seconds
+    const RING_CIRC = 314.16;
+
+    let waitTimer = null;
+    let restTimer = null;
+    let waitRemaining = WAIT_SEC;
+    let restRemaining = REST_SEC;
+
+    function show(id) {
+      ["view-idle", "view-waiting", "view-alert", "view-rest", "view-done"]
+        .forEach(v => document.getElementById(v).style.display = v === id ? "block" : "none");
+    }
+
+    function fmtTime(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function updateRing(remaining) {
+      const ratio = remaining / WAIT_SEC;
+      // ring drains clockwise: offset goes from 0 → CIRC as remaining goes 1 → 0
+      const offset = RING_CIRC * (1 - ratio);
+      document.getElementById("ring-bar").setAttribute("stroke-dashoffset", offset);
+    }
+
+    function startWaiting() {
+      clearTimers();
+      waitRemaining = WAIT_SEC;
+      show("view-waiting");
+      document.getElementById("wait-display").textContent = fmtTime(waitRemaining);
+      updateRing(waitRemaining);
+
+      waitTimer = setInterval(() => {
+        waitRemaining--;
+        document.getElementById("wait-display").textContent = fmtTime(waitRemaining);
+        updateRing(waitRemaining);
+
+        if (waitRemaining <= 0) {
+          clearInterval(waitTimer);
+          triggerAlert();
+        }
+      }, 1000);
+    }
+
+    function triggerAlert() {
+      show("view-alert");
+      // browser notification (if permitted)
+      if (Notification.permission === "granted") {
+        new Notification("👁️ 护眼提醒", { body: "请看向远处 6 米外，持续 20 秒。", icon: "" });
+      }
+    }
+
+    function startRest() {
+      clearTimers();
+      restRemaining = REST_SEC;
+      show("view-rest");
+      document.getElementById("rest-num").textContent = restRemaining;
+
+      restTimer = setInterval(() => {
+        restRemaining--;
+        document.getElementById("rest-num").textContent = restRemaining;
+        if (restRemaining <= 0) {
+          clearInterval(restTimer);
+          show("view-done");
+        }
+      }, 1000);
+    }
+
+    function resetAll() {
+      clearTimers();
+      show("view-idle");
+    }
+
+    function clearTimers() {
+      clearInterval(waitTimer);
+      clearInterval(restTimer);
+      waitTimer = null;
+      restTimer = null;
+    }
+
+    // Request notification permission on load
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  </script>
+</body>
+
+</html>
